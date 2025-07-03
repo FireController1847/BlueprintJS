@@ -1,0 +1,75 @@
+.blueprint {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background-color: #002082;
+    background-image:
+        radial-gradient(at center, #213ea6, #002082)
+}
+.blueprint-body,
+.blueprint-marks,
+.blueprint-grid {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 0.575in;
+}
+.blueprint-body {
+    border: 2px solid white;
+}
+.blueprint-mark {
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+.blueprint-mark:nth-child(10n+1) {
+    background-color: rgba(255, 255, 255, 0.75);
+}
+.blueprint-mark.vertical {
+    top: -0.575in;
+    width: 0.01in;
+    height: 0.125in;
+}
+.blueprint-mark.vertical:nth-child(10n+1) {
+    height: 0.275in;
+}
+.blueprint-mark.vertical.bottom {
+    top: auto;
+    bottom: -0.575in;
+    height: 0.275in;
+    background-color: rgba(255, 255, 255, 0.75);
+}
+.blueprint-mark.horizontal {
+    left: -0.575in;
+    width: 0.125in;
+    height: 0.01in;
+}
+.blueprint-mark.horizontal:nth-child(10n+1) {
+    width: 0.275in;
+}
+.blueprint-mark.horizontal.right {
+    left: auto;
+    right: -0.575in;
+    width: 0.275in;
+    background-color: rgba(255, 255, 255, 0.75);
+}
+.blueprint-grid-line {
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.25);
+}
+.blueprint-grid-line:nth-child(10n) {
+    background-color: rgba(255, 255, 255, 0.5);
+}
+.blueprint-grid-line.vertical {
+    top: 0;
+    bottom: 0;
+    width: 0.01in;
+}
+.blueprint-grid-line.horizontal {
+    left: 0;
+    right: 0;
+    height: 0.01in;
+}
