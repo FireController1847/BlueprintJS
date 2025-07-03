@@ -34,7 +34,7 @@ module.exports = [
         mode: "development",
         output: {
             path: path.resolve(__dirname, "dist"),
-            filename: `blueprint-${version}.js`
+            filename: `blueprintjs-${version}.js`
         },
         optimization: {
             minimize: false
@@ -54,7 +54,7 @@ module.exports = [
         mode: "production",
         output: {
             path: path.resolve(__dirname, "dist"),
-            filename: `blueprint-${version}.min.js`
+            filename: `blueprintjs-${version}.min.js`
         },
         optimization: {
             minimize: true,
