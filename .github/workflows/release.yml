@@ -84,25 +84,22 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        # Find the generated files in dist directory
-        UNMINIFIED=$(find dist -name "blueprint-*.js" ! -name "*.min.js" | head -1)
-        MINIFIED=$(find dist -name "blueprint-*.min.js" | head -1)
-        SOURCEMAP=$(find dist -name "blueprint-*.js.map" | head -1)
-
-        echo "Found files:"
-        echo "  Unminified: $UNMINIFIED"
-        echo "  Minified: $MINIFIED"
-        echo "  Source map: $SOURCEMAP"
-
-        # Upload files to the release
-        if [ -n "$UNMINIFIED" ] && [ -f "$UNMINIFIED" ]; then
-          gh release upload "v${{ github.event.inputs.version }}" "$UNMINIFIED#blueprint-${{ github.event.inputs.version }}.js"
+        # Check if dist directory exists and has files
+        if [ ! -d "dist" ] || [ -z "$(ls -A dist)" ]; then
+          echo "No files found in dist directory"
+          exit 1
         fi
 
-        if [ -n "$MINIFIED" ] && [ -f "$MINIFIED" ]; then
-          gh release upload "v${{ github.event.inputs.version }}" "$MINIFIED#blueprint-${{ github.event.inputs.version }}.min.js"
-        fi
+        echo "Found files in dist directory:"
+        ls -la dist/
 
-        if [ -n "$SOURCEMAP" ] && [ -f "$SOURCEMAP" ]; then
-          gh release upload "v${{ github.event.inputs.version }}" "$SOURCEMAP#blueprint-${{ github.event.inputs.version }}.js.map"
-        fi
+        # Upload all files from the dist directory
+        for file in dist/*; do
+          if [ -f "$file" ]; then
+            filename=$(basename "$file")
+            echo "Uploading: $filename"
+            gh release upload "v${{ github.event.inputs.version }}" "$file"
+          fi
+        done
+
+        echo "All files uploaded successfully!"
