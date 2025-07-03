@@ -154,8 +154,13 @@ function drawBlueprint(inch, $blueprint) {
     }
     for (let i = 0; i < $blueprints.length; i++) {
         let $blueprint = $($blueprints[i]);
+        // Preserve the original content
+        const originalContent = $blueprint.html();
         const $clone = $($template.clone().prop('content'));
         const $inserted = $clone.children().first();
+        // Insert the original content into the template's .blueprint-body
+        const $body = $inserted.find('.blueprint-body');
+        if ($body.length > 0) $body.html(originalContent);
         $blueprint.replaceWith($inserted);
         $blueprint = $inserted;
         $clone.remove();

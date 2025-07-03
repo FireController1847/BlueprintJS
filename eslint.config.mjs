@@ -30,7 +30,7 @@ export default defineConfig([{
             allowSingleLine: true,
         }],
 
-        curly: ["error", "all"],
+        curly: ["error", "multi-line"],
 
         "newline-per-chained-call": ["error", {
             ignoreChainWithDepth: 2,

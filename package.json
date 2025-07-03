@@ -1,6 +1,6 @@
 {
   "name": "blueprintjs",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A simple HTML, CSS, &amp; JavaScript script to generate a blueprint-styled background for a website.",
   "main": "index.js",
   "directories": {

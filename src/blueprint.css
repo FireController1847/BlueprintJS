@@ -20,6 +20,13 @@
 }
 .blueprint-body {
     border: 2px solid white;
+    z-index: 3;
+}
+.blueprint-marks {
+    z-index: 2;
+}
+.blueprint-grid {
+    z-index: 1;
 }
 .blueprint-mark {
     position: absolute;
