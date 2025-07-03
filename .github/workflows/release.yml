@@ -1,0 +1,108 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 1.0.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch all history for changelog generation
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Update package.json version
+      run: |
+        # Use jq to update the version in package.json
+        jq '.version = "${{ github.event.inputs.version }}"' package.json > package.json.tmp
+        mv package.json.tmp package.json
+        echo "Updated package.json version to ${{ github.event.inputs.version }}"
+
+    - name: Build with webpack
+      run: npm run build
+
+    - name: Generate changelog
+      id: changelog
+      run: |
+        # Get the latest tag
+        LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+        # If no previous tag exists, get all commits
+        if [ -z "$LATEST_TAG" ]; then
+          CHANGELOG=$(git log --pretty=format:"- %s (%h)" --reverse)
+        else
+          CHANGELOG=$(git log ${LATEST_TAG}..HEAD --pretty=format:"- %s (%h)" --reverse)
+        fi
+
+        # If no new commits, use a default message
+        if [ -z "$CHANGELOG" ]; then
+          CHANGELOG="- Release v${{ github.event.inputs.version }}"
+        fi
+
+        # Save changelog to file and output
+        echo "$CHANGELOG" > changelog.txt
+        echo "changelog<<EOF" >> $GITHUB_OUTPUT
+        echo "$CHANGELOG" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+    - name: Create Release
+      id: create_release
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Create the release using gh CLI
+        gh release create "v${{ github.event.inputs.version }}" \
+          --title "Release v${{ github.event.inputs.version }}" \
+          --notes "## Release v${{ github.event.inputs.version }}
+
+        ### Changes
+        $(cat changelog.txt)" \
+          --draft=false \
+          --prerelease=false
+
+    - name: Upload release assets
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Find the generated files in dist directory
+        UNMINIFIED=$(find dist -name "blueprint-*.js" ! -name "*.min.js" | head -1)
+        MINIFIED=$(find dist -name "blueprint-*.min.js" | head -1)
+        SOURCEMAP=$(find dist -name "blueprint-*.js.map" | head -1)
+
+        echo "Found files:"
+        echo "  Unminified: $UNMINIFIED"
+        echo "  Minified: $MINIFIED"
+        echo "  Source map: $SOURCEMAP"
+
+        # Upload files to the release
+        if [ -n "$UNMINIFIED" ] && [ -f "$UNMINIFIED" ]; then
+          gh release upload "v${{ github.event.inputs.version }}" "$UNMINIFIED#blueprint-${{ github.event.inputs.version }}.js"
+        fi
+
+        if [ -n "$MINIFIED" ] && [ -f "$MINIFIED" ]; then
+          gh release upload "v${{ github.event.inputs.version }}" "$MINIFIED#blueprint-${{ github.event.inputs.version }}.min.js"
+        fi
+
+        if [ -n "$SOURCEMAP" ] && [ -f "$SOURCEMAP" ]; then
+          gh release upload "v${{ github.event.inputs.version }}" "$SOURCEMAP#blueprint-${{ github.event.inputs.version }}.js.map"
+        fi
