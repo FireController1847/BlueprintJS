@@ -19,16 +19,22 @@ function determineInch() {
 
 function fetchBlueprint(path) {
     return new Promise((resolve, reject) => {
-        $.get(path).done(function(data) {
-            resolve($(data));
-        }).catch(function(xhr, status, error) {
-            reject(`${PREFIX}Error fetching blueprint template: ${xhr.status}: ${xhr.statusText}`);
-        })
+        console.debug(`${PREFIX}Fetching blueprint template from:`, window.__bpjsBlueprintTemplate);
+        if (window.__bpjsBlueprintTemplate) {
+            resolve($(window.__bpjsBlueprintTemplate));
+        } else {
+            $.get(path).done((data) => {
+                resolve($(data));
+            })
+                .catch((xhr, _status, _error) => {
+                    reject(`${PREFIX}Error fetching blueprint template: ${xhr.status}: ${xhr.statusText}`);
+                });
+        }
     });
 }
 
 function drawMarks(sizing, $bpmarks) {
-    const { numTenthsX, numTenthsY } = sizing;
+    const {numTenthsX, numTenthsY} = sizing;
     console.debug(`${PREFIX}Drawing marks with sizing:`, sizing);
 
     // Draw top vertical marks
@@ -73,7 +79,7 @@ function drawMarks(sizing, $bpmarks) {
 }
 
 function drawGrid(sizing, $bpgrid) {
-    const { inch, numTenthsX, numTenthsY } = sizing;
+    const {numTenthsX, numTenthsY} = sizing;
     console.debug(`${PREFIX}Drawing grid with sizing:`, sizing);
 
     // Draw vertical lines
@@ -99,7 +105,7 @@ function drawGrid(sizing, $bpgrid) {
 
 function drawBlueprint(inch, $blueprint) {
     const $body = $blueprint.find(".blueprint-body");
-    if ($body.length == 0) {
+    if ($body.length === 0) {
         console.error(`${PREFIX}No blueprint body found in the template.`);
         return;
     }
@@ -155,17 +161,17 @@ function drawBlueprint(inch, $blueprint) {
         $clone.remove();
         console.debug(`${PREFIX}Processing blueprint ${i + 1}/${$blueprints.length}:`, $blueprint);
         drawBlueprint(inch, $blueprint);
-        $blueprint.on("resize", function() {
+        $blueprint.on("resize", () => {
             console.debug(`${PREFIX}Resizing blueprint:`, $blueprint);
             drawBlueprint(inch, $blueprint);
         });
         blueprints.push($blueprint);
     }
-    $(window).on("resize", function() {
+    $(window).on("resize", () => {
         console.debug(`${PREFIX}Window resized, redrawing all blueprints.`);
         for (let i = 0; i < blueprints.length; i++) {
             const $bp = blueprints[i];
             drawBlueprint(inch, $bp);
         }
     });
-})();
+}());
